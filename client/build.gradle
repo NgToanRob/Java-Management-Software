@@ -1,0 +1,39 @@
+plugins {
+    id 'application'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'client.App'
+}
+
+run {
+    standardInput = System.in
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'client.App'
+    }
+    from project(":common")
+
+}
+
+version 'unspecified'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.jetbrains:annotations:20.1.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    implementation project(':common')
+}
+
+test {
+    useJUnitPlatform()
+}
