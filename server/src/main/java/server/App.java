@@ -3,8 +3,9 @@ package server;
 import common.exceptions.NotInDeclaredLimitsException;
 import common.exceptions.WrongAmountOfElementsException;
 import common.utility.Outputer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import server.commands.*;
 import server.utility.*;
 
@@ -16,7 +17,7 @@ import server.utility.*;
 public class App {
     // TODO: Add a where query to delete + 1 more condition so that the user is checked during change commands (it can be changed in the database itself)
     private static final int MAX_CLIENTS = 1000;
-    public static Logger logger = LogManager.getLogger("ServerLogger");
+    public static Logger logger = LoggerFactory.getLogger("ServerLogger");
     private static final String databaseUsername = "mrtoan";
     private static int port;
     private static String databaseHost;
@@ -25,9 +26,9 @@ public class App {
 
     public static void main(String[] args) {
         if (!initialize(args)) return;
-        DatabaseHandler databaseHandler = new DatabaseHandler(databaseAddress, databaseUsername, databasePassword);
-        DatabaseUserManager databaseUserManager = new DatabaseUserManager(databaseHandler);
-        DatabaseCollectionManager databaseCollectionManager = new DatabaseCollectionManager(databaseHandler, databaseUserManager);
+        DatabaseCommunication databaseCommunication = new DatabaseCommunication(databaseAddress, databaseUsername, databasePassword);
+        DatabaseUserManager databaseUserManager = new DatabaseUserManager(databaseCommunication);
+        DatabaseCollectionManager databaseCollectionManager = new DatabaseCollectionManager(databaseCommunication, databaseUserManager);
         CollectionManager collectionManager = new CollectionManager(databaseCollectionManager);
         CommandManager commandManager = new CommandManager(
                 new HelpCommand(),
@@ -40,18 +41,18 @@ public class App {
                 new ExitCommand(),
                 new ExecuteScriptCommand(),
                 new AddIfMinCommand(collectionManager, databaseCollectionManager),
-                new RemoveGreaterCommand(collectionManager, databaseCollectionManager),
+                new RemoveLowerCommand(collectionManager, databaseCollectionManager),
                 new HistoryCommand(),
-                new SumOfHealthCommand(collectionManager),
-                new MaxByMeleeWeaponCommand(collectionManager),
-                new FilterByWeaponTypeCommand(collectionManager),
+                new AverageOfAnnualTurnoverCommand(collectionManager),
+                new CountGreaterThanOfficialAddressCommand(collectionManager),
+                new FilterGreaterThanTypeCommand(collectionManager),
                 new ServerExitCommand(),
                 new LoginCommand(databaseUserManager),
                 new RegisterCommand(databaseUserManager)
         );
         Server server = new Server(port, MAX_CLIENTS, commandManager);
         server.run();
-        databaseHandler.closeConnection();
+        databaseCommunication.closeConnection();
     }
 
     /**
@@ -66,7 +67,7 @@ public class App {
             if (port < 0) throw new NotInDeclaredLimitsException();
             databaseHost = args[1];
             databasePassword = args[2];
-            databaseAddress = "jdbc:postgresql://" + databaseHost + ":5432/studs";
+            databaseAddress = "jdbc:postgresql://" + databaseHost + ":5432/OrganizationDB";
             return true;
         } catch (WrongAmountOfElementsException exception) {
             String jarName = new java.io.File(App.class.getProtectionDomain()
@@ -77,12 +78,12 @@ public class App {
             Outputer.println("To use: 'java -jar " + jarName + " <port> <db_host> <db_password>'");
         } catch (NumberFormatException exception) {
             Outputer.printerror("The port must be represented by a number!");
-            App.logger.fatal("The port must be represented by a number!");
+            App.logger.error("The port must be represented by a number!");
         } catch (NotInDeclaredLimitsException exception) {
             Outputer.printerror("The port cannot be negative!");
-            App.logger.fatal("The port cannot be negative!");
+            App.logger.error("The port cannot be negative!");
         }
-        App.logger.fatal("Launch port initialization error!");
+        App.logger.error("Launch port initialization error!");
         return false;
     }
 }

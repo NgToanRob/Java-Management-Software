@@ -13,21 +13,21 @@ import java.sql.SQLException;
  */
 public class DatabaseUserManager {
     // USER_TABLE
-    private final String SELECT_USER_BY_ID = "SELECT * FROM " + DatabaseHandler.USER_TABLE +
-            " WHERE " + DatabaseHandler.USER_TABLE_ID_COLUMN + " = ?";
-    private final String SELECT_USER_BY_USERNAME = "SELECT * FROM " + DatabaseHandler.USER_TABLE +
-            " WHERE " + DatabaseHandler.USER_TABLE_USERNAME_COLUMN + " = ?";
+    private final String SELECT_USER_BY_ID = "SELECT * FROM " + DatabaseCommunication.USER_TABLE +
+            " WHERE " + DatabaseCommunication.USER_TABLE_ID_COLUMN + " = ?";
+    private final String SELECT_USER_BY_USERNAME = "SELECT * FROM " + DatabaseCommunication.USER_TABLE +
+            " WHERE " + DatabaseCommunication.USER_TABLE_USERNAME_COLUMN + " = ?";
     private final String SELECT_USER_BY_USERNAME_AND_PASSWORD = SELECT_USER_BY_USERNAME + " AND " +
-            DatabaseHandler.USER_TABLE_PASSWORD_COLUMN + " = ?";
+            DatabaseCommunication.USER_TABLE_PASSWORD_COLUMN + " = ?";
     private final String INSERT_USER = "INSERT INTO " +
-            DatabaseHandler.USER_TABLE + " (" +
-            DatabaseHandler.USER_TABLE_USERNAME_COLUMN + ", " +
-            DatabaseHandler.USER_TABLE_PASSWORD_COLUMN + ") VALUES (?, ?)";
+            DatabaseCommunication.USER_TABLE + " (" +
+            DatabaseCommunication.USER_TABLE_USERNAME_COLUMN + ", " +
+            DatabaseCommunication.USER_TABLE_PASSWORD_COLUMN + ") VALUES (?, ?)";
 
-    private DatabaseHandler databaseHandler;
+    private DatabaseCommunication databaseCommunication;
 
-    public DatabaseUserManager(DatabaseHandler databaseHandler) {
-        this.databaseHandler = databaseHandler;
+    public DatabaseUserManager(DatabaseCommunication databaseCommunication) {
+        this.databaseCommunication = databaseCommunication;
     }
 
     /**
@@ -40,21 +40,21 @@ public class DatabaseUserManager {
         PreparedStatement preparedSelectUserByIdStatement = null;
         try {
             preparedSelectUserByIdStatement =
-                    databaseHandler.getPreparedStatement(SELECT_USER_BY_ID, false);
+                    databaseCommunication.getPreparedStatement(SELECT_USER_BY_ID, false);
             preparedSelectUserByIdStatement.setLong(1, userId);
             ResultSet resultSet = preparedSelectUserByIdStatement.executeQuery();
-            App.logger.info("Выполнен запрос SELECT_USER_BY_ID.");
+            App.logger.info("SELECT_USER_BY_ID query completed.");
             if (resultSet.next()) {
                 user = new User(
-                        resultSet.getString(DatabaseHandler.USER_TABLE_USERNAME_COLUMN),
-                        resultSet.getString(DatabaseHandler.USER_TABLE_PASSWORD_COLUMN)
+                        resultSet.getString(DatabaseCommunication.USER_TABLE_USERNAME_COLUMN),
+                        resultSet.getString(DatabaseCommunication.USER_TABLE_PASSWORD_COLUMN)
                 );
             } else throw new SQLException();
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при выполнении запроса SELECT_USER_BY_ID!");
+            App.logger.error("An error occurred while executing the SELECT_USER_BY_ID query!");
             throw new SQLException(exception);
         } finally {
-            databaseHandler.closePreparedStatement(preparedSelectUserByIdStatement);
+            databaseCommunication.closePreparedStatement(preparedSelectUserByIdStatement);
         }
         return user;
     }
@@ -70,17 +70,17 @@ public class DatabaseUserManager {
         PreparedStatement preparedSelectUserByUsernameAndPasswordStatement = null;
         try {
             preparedSelectUserByUsernameAndPasswordStatement =
-                    databaseHandler.getPreparedStatement(SELECT_USER_BY_USERNAME_AND_PASSWORD, false);
+                    databaseCommunication.getPreparedStatement(SELECT_USER_BY_USERNAME_AND_PASSWORD, false);
             preparedSelectUserByUsernameAndPasswordStatement.setString(1, user.getUsername());
             preparedSelectUserByUsernameAndPasswordStatement.setString(2, user.getPassword());
             ResultSet resultSet = preparedSelectUserByUsernameAndPasswordStatement.executeQuery();
-            App.logger.info("Выполнен запрос SELECT_USER_BY_USERNAME_AND_PASSWORD.");
+            App.logger.info("SELECT_USER_BY_USERNAME_AND_PASSWORD query completed.");
             return resultSet.next();
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при выполнении запроса SELECT_USER_BY_USERNAME_AND_PASSWORD!");
+            App.logger.error("An error occurred while executing the SELECT_USER_BY_USERNAME_AND_PASSWORD query!");
             throw new DatabaseHandlingException();
         } finally {
-            databaseHandler.closePreparedStatement(preparedSelectUserByUsernameAndPasswordStatement);
+            databaseCommunication.closePreparedStatement(preparedSelectUserByUsernameAndPasswordStatement);
         }
     }
 
@@ -96,19 +96,19 @@ public class DatabaseUserManager {
         PreparedStatement preparedSelectUserByUsernameStatement = null;
         try {
             preparedSelectUserByUsernameStatement =
-                    databaseHandler.getPreparedStatement(SELECT_USER_BY_USERNAME, false);
+                    databaseCommunication.getPreparedStatement(SELECT_USER_BY_USERNAME, false);
             preparedSelectUserByUsernameStatement.setString(1, user.getUsername());
             ResultSet resultSet = preparedSelectUserByUsernameStatement.executeQuery();
-            App.logger.info("Выполнен запрос SELECT_USER_BY_USERNAME.");
+            App.logger.info("SELECT_USER_BY_USERNAME query completed.");
             if (resultSet.next()) {
-                userId = resultSet.getLong(DatabaseHandler.USER_TABLE_ID_COLUMN);
+                userId = resultSet.getLong(DatabaseCommunication.USER_TABLE_ID_COLUMN);
             } else userId = -1;
             return userId;
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при выполнении запроса SELECT_USER_BY_USERNAME!");
+            App.logger.error("An error occurred while executing the SELECT_USER_BY_USERNAME query!");
             throw new DatabaseHandlingException();
         } finally {
-            databaseHandler.closePreparedStatement(preparedSelectUserByUsernameStatement);
+            databaseCommunication.closePreparedStatement(preparedSelectUserByUsernameStatement);
         }
     }
 
@@ -124,17 +124,17 @@ public class DatabaseUserManager {
         try {
             if (getUserIdByUsername(user) != -1) return false;
             preparedInsertUserStatement =
-                    databaseHandler.getPreparedStatement(INSERT_USER, false);
+                    databaseCommunication.getPreparedStatement(INSERT_USER, false);
             preparedInsertUserStatement.setString(1, user.getUsername());
             preparedInsertUserStatement.setString(2, user.getPassword());
             if (preparedInsertUserStatement.executeUpdate() == 0) throw new SQLException();
-            App.logger.info("Выполнен запрос INSERT_USER.");
+            App.logger.info("INSERT_USER query completed.");
             return true;
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при выполнении запроса INSERT_USER!");
+            App.logger.error("An error occurred while executing the INSERT_USER query!");
             throw new DatabaseHandlingException();
         } finally {
-            databaseHandler.closePreparedStatement(preparedInsertUserStatement);
+            databaseCommunication.closePreparedStatement(preparedInsertUserStatement);
         }
     }
 }

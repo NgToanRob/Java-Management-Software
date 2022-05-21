@@ -10,7 +10,7 @@ import server.utility.ResponseOutputer;
 public class ServerExitCommand extends AbstractCommand {
 
     public ServerExitCommand() {
-        super("server_exit", "", "завершить работу сервера");
+        super("server_exit", "", "shut down the server");
     }
 
     /**
@@ -22,10 +22,10 @@ public class ServerExitCommand extends AbstractCommand {
     public boolean execute(String stringArgument, Object objectArgument, User user) {
         try {
             if (!stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
-            ResponseOutputer.appendln("Работа сервера успешно завершена!");
+            ResponseOutputer.appendln("The server has been successfully completed!");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         }
         return false;
     }

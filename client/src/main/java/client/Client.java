@@ -18,16 +18,16 @@ import java.nio.channels.SocketChannel;
  * Runs the client.
  */
 public class Client {
-    private String host;
-    private int port;
-    private int reconnectionTimeout;
+    private final String host;
+    private final int port;
+    private final int reconnectionTimeout;
     private int reconnectionAttempts;
-    private int maxReconnectionAttempts;
-    private UserHandler userHandler;
+    private final int maxReconnectionAttempts;
+    private final UserHandler userHandler;
     private SocketChannel socketChannel;
     private ObjectOutputStream serverWriter;
     private ObjectInputStream serverReader;
-    private AuthHandler authHandler;
+    private final AuthHandler authHandler;
     private User user;
 
     public Client(String host, int port, int reconnectionTimeout, int maxReconnectionAttempts, UserHandler userHandler,
@@ -53,28 +53,27 @@ public class Client {
                     break;
                 } catch (ConnectionErrorException exception) {
                     if (reconnectionAttempts >= maxReconnectionAttempts) {
-                        Outputer.printerror("Превышено количество попыток подключения!");
+                        Outputer.printerror("Connection attempts exceeded!");
                         break;
                     }
                     try {
                         Thread.sleep(reconnectionTimeout);
                     } catch (IllegalArgumentException timeoutException) {
-                        Outputer.printerror("Время ожидания подключения '" + reconnectionTimeout +
-                                "' находится за пределами возможных значений!");
-                        Outputer.println("Повторное подключение будет произведено немедленно.");
+                        Outputer.printerror("Connection timeout '" + reconnectionTimeout + "' is out of range!");
+                        Outputer.println("Reconnection will be made immediately.");
                     } catch (Exception timeoutException) {
-                        Outputer.printerror("Произошла ошибка при попытке ожидания подключения!");
-                        Outputer.println("Повторное подключение будет произведено немедленно.");
+                        Outputer.printerror("An error occurred while trying to connect!");
+                        Outputer.println("Reconnection will be made immediately.");
                     }
                 }
                 reconnectionAttempts++;
             }
             if (socketChannel != null) socketChannel.close();
-            Outputer.println("Работа клиента завершена.");
+            Outputer.println("Client job completed.");
         } catch (NotInDeclaredLimitsException exception) {
-            Outputer.printerror("Клиент не может быть запущен!");
+            Outputer.printerror("The client cannot be started!");
         } catch (IOException exception) {
-            Outputer.printerror("Произошла ошибка при попытке завершить соединение с сервером!");
+            Outputer.printerror("An error occurred while trying to terminate the connection to the server!");
         }
     }
 
@@ -83,18 +82,18 @@ public class Client {
      */
     private void connectToServer() throws ConnectionErrorException, NotInDeclaredLimitsException {
         try {
-            if (reconnectionAttempts >= 1) Outputer.println("Повторное соединение с сервером...");
+            if (reconnectionAttempts >= 1) Outputer.println("Reconnecting to the server...");
             socketChannel = SocketChannel.open(new InetSocketAddress(host, port));
-            Outputer.println("Соединение с сервером установлено.");
-            Outputer.println("Ожидание разрешения на обмен данными...");
+            Outputer.println("The connection to the server has been established.");
+            Outputer.println("Waiting for permission to share data...");
             serverWriter = new ObjectOutputStream(socketChannel.socket().getOutputStream());
             serverReader = new ObjectInputStream(socketChannel.socket().getInputStream());
-            Outputer.println("Разрешение на обмен данными получено.");
+            Outputer.println("Permission to share data received.");
         } catch (IllegalArgumentException exception) {
-            Outputer.printerror("Адрес сервера введен некорректно!");
+            Outputer.printerror("Server address entered incorrectly!");
             throw new NotInDeclaredLimitsException();
         } catch (IOException exception) {
-            Outputer.printerror("Произошла ошибка при соединении с сервером!");
+            Outputer.printerror("An error occurred while connecting to the server!");
             throw new ConnectionErrorException();
         }
     }
@@ -114,17 +113,17 @@ public class Client {
                 serverResponse = (Response) serverReader.readObject();
                 Outputer.print(serverResponse.getResponseBody());
             } catch (InvalidClassException | NotSerializableException exception) {
-                Outputer.printerror("Произошла ошибка при отправке данных на сервер!");
+                Outputer.printerror("An error occurred while sending data to the server!");
             } catch (ClassNotFoundException exception) {
-                Outputer.printerror("Произошла ошибка при чтении полученных данных!");
+                Outputer.printerror("An error occurred while reading the received data!");
             } catch (IOException exception) {
-                Outputer.printerror("Соединение с сервером разорвано!");
+                Outputer.printerror("The connection to the server has been broken!");
                 try {
                     connectToServer();
                 } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
                     if (requestToServer.getCommandName().equals("exit"))
-                        Outputer.println("Команда не будет зарегистрирована на сервере.");
-                    else Outputer.println("Попробуйте повторить команду позднее.");
+                        Outputer.println("The team will not be registered on the server.");
+                    else Outputer.println("Try to repeat the command later.");
                 }
             }
         } while (!requestToServer.getCommandName().equals("exit"));
@@ -144,15 +143,15 @@ public class Client {
                 serverResponse = (Response) serverReader.readObject();
                 Outputer.print(serverResponse.getResponseBody());
             } catch (InvalidClassException | NotSerializableException exception) {
-                Outputer.printerror("Произошла ошибка при отправке данных на сервер!");
+                Outputer.printerror("An error occurred while sending data to the server!");
             } catch (ClassNotFoundException exception) {
-                Outputer.printerror("Произошла ошибка при чтении полученных данных!");
+                Outputer.printerror("An error occurred while reading the received data!");
             } catch (IOException exception) {
-                Outputer.printerror("Соединение с сервером разорвано!");
+                Outputer.printerror("The connection to the server has been broken!");
                 try {
                     connectToServer();
                 } catch (ConnectionErrorException | NotInDeclaredLimitsException reconnectionException) {
-                    Outputer.println("Попробуйте повторить авторизацию позднее.");
+                    Outputer.println("Please try again later.");
                 }
             }
         } while (serverResponse == null || !serverResponse.getResponseCode().equals(ResponseCode.OK));

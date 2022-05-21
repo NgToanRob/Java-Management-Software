@@ -92,16 +92,16 @@ public class HandleRequestTask extends RecursiveTask<Response> {
                 if (!commandManager.history(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "sum_of_health":
-                if (!commandManager.sumOfHealth(commandStringArgument, commandObjectArgument, user))
+            case "average_of_annual_turnover":
+                if (!commandManager.averageOfAnnualTurnover(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "max_by_melee_weapon":
-                if (!commandManager.maxByMeleeWeapon(commandStringArgument, commandObjectArgument, user))
+            case "count_greater_than_official_address":
+                if (!commandManager.countGreaterThanOfficialAddress(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "filter_by_weapon_type":
-                if (!commandManager.filterByWeaponType(commandStringArgument, commandObjectArgument, user))
+            case "filter_greater_than_type":
+                if (!commandManager.filterGreaterThanType(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
             case "server_exit":

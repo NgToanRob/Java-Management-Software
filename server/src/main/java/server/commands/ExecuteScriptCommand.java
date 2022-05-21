@@ -9,7 +9,7 @@ import server.utility.ResponseOutputer;
  */
 public class ExecuteScriptCommand extends AbstractCommand {
     public ExecuteScriptCommand() {
-        super("execute_script", "<file_name>", "исполнить скрипт из указанного файла");
+        super("execute_script <file_name>", "","execute script from specified file");
     }
 
     /**
@@ -23,7 +23,7 @@ public class ExecuteScriptCommand extends AbstractCommand {
             if (stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         }
         return false;
     }

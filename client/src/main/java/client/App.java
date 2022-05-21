@@ -14,9 +14,6 @@ import java.util.Scanner;
  * @author Sviridov Dmitry and Orlov Egor.
  */
 public class App {
-    public static final String PS1 = "$ ";
-    public static final String PS2 = "> ";
-
     private static final int RECONNECTION_TIMEOUT = 5 * 1000;
     private static final int MAX_RECONNECTION_ATTEMPTS = 5;
 
@@ -24,7 +21,9 @@ public class App {
     private static int port;
 
     public static void main(String[] args) {
-        if (!initialize(args)) return;
+        String[] arg = new String[]{"localhost", "4999"};
+
+        if (!initialize(arg)) return;
         Scanner userScanner = new Scanner(System.in);
         AuthHandler authHandler = new AuthHandler(userScanner);
         UserHandler userHandler = new UserHandler(userScanner);
@@ -49,11 +48,11 @@ public class App {
                     .getLocation()
                     .getPath())
                     .getName();
-            Outputer.println("Использование: 'java -jar " + jarName + " <host> <port>'");
+            Outputer.println("Using: 'java -jar " + jarName + " <host> <port>'");
         } catch (NumberFormatException exception) {
-            Outputer.printerror("Порт должен быть представлен числом!");
+            Outputer.printerror("The port must be represented by a number!");
         } catch (NotInDeclaredLimitsException exception) {
-            Outputer.printerror("Порт не может быть отрицательным!");
+            Outputer.printerror("The port cannot be negative!");
         }
         return false;
     }

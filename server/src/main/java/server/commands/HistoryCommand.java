@@ -10,7 +10,7 @@ import server.utility.ResponseOutputer;
 public class HistoryCommand extends AbstractCommand {
 
     public HistoryCommand() {
-        super("history", "", "вывести историю использованных команд");
+        super("history", "","display history of used commands");
     }
 
     /**
@@ -24,7 +24,7 @@ public class HistoryCommand extends AbstractCommand {
             if (!stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         }
         return false;
     }

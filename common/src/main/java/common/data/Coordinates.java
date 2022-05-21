@@ -1,50 +1,59 @@
 package common.data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * X-Y coordinates.
+ * Coordinates is a class that has two fields: x and y
  */
 public class Coordinates implements Serializable {
-    private double x;
-    private Float y;
+    private int x;
+    private float y;
 
-    public Coordinates(double x, Float y) {
+    public Coordinates(int x, float y) {
         this.x = x;
         this.y = y;
     }
 
     /**
-     * @return X-coordinate.
+     * Returns the x coordinate of the organization
+     *
+     * @return The x coordinate of the organization.
      */
-    public double getX() {
+    public int getX() {
         return x;
     }
 
     /**
-     * @return Y-coordinate.
+     * Returns the y-coordinate of the organization
+     *
+     * @return The y-coordinate of the organization.
      */
-    public Float getY() {
+    public float getY() {
         return y;
     }
 
     @Override
     public String toString() {
-        return "X:" + x + " Y:" + y;
+        return "Coordinates{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
     }
 
     @Override
     public int hashCode() {
-        return y.hashCode() + (int) x;
+        return Objects.hash(getX(), getY());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj instanceof Coordinates) {
-            Coordinates coordinatesObj = (Coordinates) obj;
-            return (x == coordinatesObj.getX()) && y.equals(coordinatesObj.getY());
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Coordinates)) return false;
+
+        Coordinates that = (Coordinates) o;
+
+        if (getX() != that.getX()) return false;
+        return Float.compare(that.getY(), getY()) == 0;
     }
 }

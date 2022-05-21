@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class PasswordHasher {
     /**
-     * Hashes password;.
+     * Hashes password.
      *
      * @param password Password itself.
      * @return Hashed password.
@@ -27,7 +27,7 @@ public class PasswordHasher {
             }
             return newPassword;
         } catch (NoSuchAlgorithmException exception) {
-            App.logger.error("Не найден алгоритм хэширования пароля!");
+            App.logger.error("Password hashing algorithm not found!");
             throw new IllegalStateException(exception);
         }
     }

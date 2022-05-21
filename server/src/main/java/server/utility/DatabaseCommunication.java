@@ -8,44 +8,56 @@ import java.sql.*;
 /**
  * A class for handle database.
  */
-public class DatabaseHandler {
+public class DatabaseCommunication {
     // Table names
-    public static final String MARINE_TABLE = "space_marine";
-    public static final String USER_TABLE = "my_user";
+    public static final String ORGANIZATION_TABLE = "organization";
+    public static final String USER_TABLE = "account";
     public static final String COORDINATES_TABLE = "coordinates";
-    public static final String CHAPTER_TABLE = "chapter";
-    // MARINE_TABLE column names
-    public static final String MARINE_TABLE_ID_COLUMN = "id";
-    public static final String MARINE_TABLE_NAME_COLUMN = "name";
-    public static final String MARINE_TABLE_CREATION_DATE_COLUMN = "creation_date";
-    public static final String MARINE_TABLE_HEALTH_COLUMN = "health";
-    public static final String MARINE_TABLE_CATEGORY_COLUMN = "category";
-    public static final String MARINE_TABLE_WEAPON_TYPE_COLUMN = "weapon_type";
-    public static final String MARINE_TABLE_MELEE_WEAPON_COLUMN = "melee_weapon";
-    public static final String MARINE_TABLE_CHAPTER_ID_COLUMN = "chapter_id";
-    public static final String MARINE_TABLE_USER_ID_COLUMN = "user_id";
-    // USER_TABLE column names
-    public static final String USER_TABLE_ID_COLUMN = "id";
+    public static final String OFFICIAL_ADDRESS_TABLE = "officialAddress";
+    public static final String ORGANIZATION_TYPE_TABLE = "organizationType";
+
+
+    // Organization table column names
+    public static final String ORGANIZATION_TABLE_ID_COLUMN = "id";
+    public static final String ORGANIZATION_TABLE_NAME_COLUMN = "name";
+    public static final String ORGANIZATION_TABLE_COORDINATES_ID_COLUMN = "coordinatesId";
+    public static final String ORGANIZATION_TABLE_CREATION_DATE_COLUMN = "creationDate";
+    public static final String ORGANIZATION_TABLE_ANNUAL_TURNOVER_COLUMN = "annualTurnover";
+    public static final String ORGANIZATION_TABLE_ORGANIZATION_TYPE_ID_COLUMN = "organizationTypeId";
+    public static final String ORGANIZATION_TABLE_ADDRESS_ID_COLUMN = "addressId";
+    public static final String ORGANIZATION_TABLE_ACCOUNT_ID_COLUMN = "accountId";
+
+    // Account table column names
+    public static final String USER_TABLE_ID_COLUMN = "accountId";
     public static final String USER_TABLE_USERNAME_COLUMN = "username";
+    public static final String USER_TABLE_DISPLAY_NAME_COLUMN = "displayName";
     public static final String USER_TABLE_PASSWORD_COLUMN = "password";
-    // COORDINATES_TABLE column names
-    public static final String COORDINATES_TABLE_ID_COLUMN = "id";
-    public static final String COORDINATES_TABLE_SPACE_MARINE_ID_COLUMN = "space_marine_id";
+    public static final String USER_TABLE_TYPE_COLUMN = "type";
+
+    // Coordinates table column names
+    public static final String COORDINATES_TABLE_ID_COLUMN = "coordinatesId";
     public static final String COORDINATES_TABLE_X_COLUMN = "x";
     public static final String COORDINATES_TABLE_Y_COLUMN = "y";
-    // CHAPTER_TABLE column names
-    public static final String CHAPTER_TABLE_ID_COLUMN = "id";
-    public static final String CHAPTER_TABLE_NAME_COLUMN = "name";
-    public static final String CHAPTER_TABLE_MARINES_COUNT_COLUMN = "marines_count";
 
+    // Official address column names
+    public static final String ADDRESS_TABLE_ID_COLUMN = "addressId";
+    public static final String ADDRESS_TABLE_STREET_COLUMN = "street";
+    public static final String ADDRESS_TABLE_ZIPCODE_COLUMN = "zipcode";
+
+    // Organization type table column names
+    public static final String ORGANIZATION_TYPE_TABLE_ID_COLUMN = "organizationTypeId";
+    public static final String ORGANIZATION_TYPE_TABLE_TYPE_COLUMN = "type";
+
+    // Type of database driver
     private final String JDBC_DRIVER = "org.postgresql.Driver";
 
+    // Configures
     private String url;
     private String user;
     private String password;
     private Connection connection;
 
-    public DatabaseHandler(String url, String user, String password) {
+    public DatabaseCommunication(String url, String user, String password) {
         this.url = url;
         this.user = user;
         this.password = password;
@@ -60,22 +72,24 @@ public class DatabaseHandler {
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(url, user, password);
-            Outputer.println("Соединение с базой данных установлено.");
-            App.logger.info("Соединение с базой данных установлено.");
+            Outputer.println("The database connection has been established.");
+            App.logger.info("The database connection has been established.");
         } catch (SQLException exception) {
-            Outputer.printerror("Произошла ошибка при подключении к базе данных!");
-            App.logger.error("Произошла ошибка при подключении к базе данных!");
+            Outputer.printerror("An error occurred while connecting to the database!");
+            App.logger.error("An error occurred while connecting to the database!");
         } catch (ClassNotFoundException exception) {
-            Outputer.printerror("Драйвер управления базой дынных не найден!");
-            App.logger.error("Драйвер управления базой дынных не найден!");
+            Outputer.printerror("Database management driver not found!");
+            App.logger.error("Database management driver not found!");
         }
     }
 
     /**
-     * @param sqlStatement SQL statement to be prepared.
-     * @param generateKeys Is keys needed to be generated.
-     * @return Pprepared statement.
-     * @throws SQLException When there's exception inside.
+     * It returns a prepared statement for the given SQL statement
+     *
+     * @param sqlStatement the SQL statement to be prepared.
+     * @param generateKeys if true, the method will return a PreparedStatement object that will contain the auto-generated
+     * keys produced by executing this Statement object.
+     * @return PreparedStatement
      */
     public PreparedStatement getPreparedStatement(String sqlStatement, boolean generateKeys) throws SQLException {
         PreparedStatement preparedStatement;
@@ -87,7 +101,7 @@ public class DatabaseHandler {
             return preparedStatement;
         } catch (SQLException exception) {
             //App.logger.error("Произошла ошибка при подготовке SQL запроса '" + sqlStatement + "'.");
-            if (connection == null) App.logger.error("Соединение с базой данных не установлено!");
+            if (connection == null) App.logger.error("Database connection not established!");
             throw new SQLException(exception);
         }
     }
@@ -114,11 +128,11 @@ public class DatabaseHandler {
         if (connection == null) return;
         try {
             connection.close();
-            Outputer.println("Соединение с базой данных разорвано.");
-            App.logger.info("Соединение с базой данных разорвано.");
+            Outputer.println("The connection to the database has been terminated.");
+            App.logger.info("The connection to the database has been terminated.");
         } catch (SQLException exception) {
-            Outputer.printerror("Произошла ошибка при разрыве соединения с базой данных!");
-            App.logger.error("Произошла ошибка при разрыве соединения с базой данных!");
+            Outputer.printerror("An error occurred while terminating the database connection!");
+            App.logger.error("An error occurred while terminating the database connection!");
         }
     }
 
@@ -130,7 +144,7 @@ public class DatabaseHandler {
             if (connection == null) throw new SQLException();
             connection.setAutoCommit(false);
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при установлении режима транзакции базы данных!");
+            App.logger.error("An error occurred while setting the database transaction mode!");
         }
     }
 
@@ -142,7 +156,7 @@ public class DatabaseHandler {
             if (connection == null) throw new SQLException();
             connection.setAutoCommit(true);
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при установлении нормального режима базы данных!");
+            App.logger.error("An error occurred while establishing normal database mode!");
         }
     }
 
@@ -154,7 +168,7 @@ public class DatabaseHandler {
             if (connection == null) throw new SQLException();
             connection.commit();
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при подтверждении нового состояния базы данных!");
+            App.logger.error("An error occurred while validating the new database state!");
         }
     }
 
@@ -166,7 +180,7 @@ public class DatabaseHandler {
             if (connection == null) throw new SQLException();
             connection.rollback();
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при возврате исходного состояния базы данных!");
+            App.logger.error("An error occurred while reverting the original state of the database!");
         }
     }
 
@@ -178,7 +192,7 @@ public class DatabaseHandler {
             if (connection == null) throw new SQLException();
             connection.setSavepoint();
         } catch (SQLException exception) {
-            App.logger.error("Произошла ошибка при сохранении состояния базы данных!");
+            App.logger.error("An error occurred while saving the database state!");
         }
     }
 }

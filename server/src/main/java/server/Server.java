@@ -44,7 +44,9 @@ public class Server {
                     if (isStopped()) throw new ConnectionErrorException();
                     Socket clientSocket = connectToClient();
                     ConnectionHandler task = new ConnectionHandler(this, clientSocket, commandManager);
-                    cachedThreadPool.submit(task);
+//                    cachedThreadPool.submit(task);
+                    Thread readingRequest = new Thread(task);
+                    readingRequest.start();
 
                 } catch (ConnectionErrorException exception) {
                     if (!isStopped()) {
@@ -57,7 +59,7 @@ public class Server {
             Outputer.println("The server has ended.");
         } catch (OpeningServerSocketException exception) {
             Outputer.printerror("The server cannot be started!");
-            App.logger.fatal("The server cannot be started!");
+            App.logger.error("The server cannot be started!");
         } catch (InterruptedException e) {
             Outputer.printerror("An error occurred while shutting down already connected clients!");
         }
@@ -125,11 +127,11 @@ public class Server {
             App.logger.info("The server is running.");
         } catch (IllegalArgumentException exception) {
             Outputer.printerror("Port '" + port + "' is out of range!");
-            App.logger.fatal("Port '" + port + "' is out of range!");
+            App.logger.error("Port '" + port + "' is out of range!");
             throw new OpeningServerSocketException();
         } catch (IOException exception) {
             Outputer.printerror("An error occurred while trying to use the port '" + port + "'!");
-            App.logger.fatal("An error occurred while trying to use the port '" + port + "'!");
+            App.logger.error("An error occurred while trying to use the port '" + port + "'!");
             throw new OpeningServerSocketException();
         }
     }

@@ -1,6 +1,6 @@
 package server.commands;
 
-import common.data.SpaceMarine;
+import common.data.Organization;
 import common.exceptions.DatabaseHandlingException;
 import common.exceptions.ManualDatabaseEditException;
 import common.exceptions.PermissionDeniedException;
@@ -18,7 +18,7 @@ public class ClearCommand extends AbstractCommand {
     private DatabaseCollectionManager databaseCollectionManager;
 
     public ClearCommand(CollectionManager collectionManager, DatabaseCollectionManager databaseCollectionManager) {
-        super("clear", "", "очистить коллекцию");
+        super("clear","" ,"clear the collection");
         this.collectionManager = collectionManager;
         this.databaseCollectionManager = databaseCollectionManager;
     }
@@ -32,24 +32,24 @@ public class ClearCommand extends AbstractCommand {
     public boolean execute(String stringArgument, Object objectArgument, User user) {
         try {
             if (!stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
-            for (SpaceMarine marine : collectionManager.getCollection()) {
-                if (!marine.getOwner().equals(user)) throw new PermissionDeniedException();
-                if (!databaseCollectionManager.checkMarineUserId(marine.getId(), user)) throw new ManualDatabaseEditException();
+            for (Organization organization : collectionManager.getCollection()) {
+                if (!organization.getOwner().equals(user)) throw new PermissionDeniedException();
+                if (!databaseCollectionManager.checkOrganizationUserId(organization.getId(), user)) throw new ManualDatabaseEditException();
             }
             databaseCollectionManager.clearCollection();
             collectionManager.clearCollection();
-            ResponseOutputer.appendln("Коллекция очищена!");
+            ResponseOutputer.appendln("The collection is empty!");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         } catch (DatabaseHandlingException exception) {
-            ResponseOutputer.appenderror("Произошла ошибка при обращении к базе данных!");
+            ResponseOutputer.appenderror("An error occurred while accessing the database!");
         } catch (PermissionDeniedException exception) {
-            ResponseOutputer.appenderror("Недостаточно прав для выполнения данной команды!");
-            ResponseOutputer.appendln("Принадлежащие другим пользователям объекты доступны только для чтения.");
+            ResponseOutputer.appenderror("Insufficient rights to execute this command!");
+            ResponseOutputer.appendln("Objects owned by other users are read-only.");
         } catch (ManualDatabaseEditException exception) {
-            ResponseOutputer.appenderror("Произошло прямое изменение базы данных!");
-            ResponseOutputer.appendln("Перезапустите клиент для избежания возможных ошибок.");
+            ResponseOutputer.appenderror("A direct database change has occurred!");
+            ResponseOutputer.appendln("Restart the client to avoid possible errors.");
         }
         return false;
     }

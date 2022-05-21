@@ -4,6 +4,9 @@ package common.utility;
  * Class for outputting something
  */
 public class Outputer {
+    public static final String PS1 = "$ ";
+    public static final String PS2 = "> ";
+
     /**
      * Prints toOut.toString() to Console
      *

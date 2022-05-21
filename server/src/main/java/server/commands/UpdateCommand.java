@@ -2,7 +2,7 @@ package server.commands;
 
 import common.data.*;
 import common.exceptions.*;
-import common.interaction.MarineRaw;
+import common.interaction.OrganizationRaw;
 import common.interaction.User;
 import server.utility.CollectionManager;
 import server.utility.DatabaseCollectionManager;
@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
  * Command 'update'. Updates the information about selected marine.
  */
 public class UpdateCommand extends AbstractCommand {
-    private CollectionManager collectionManager;
-    private DatabaseCollectionManager databaseCollectionManager;
+    private final CollectionManager collectionManager;
+    private final DatabaseCollectionManager databaseCollectionManager;
 
     public UpdateCommand(CollectionManager collectionManager, DatabaseCollectionManager databaseCollectionManager) {
-        super("update", "<ID> {element}", "обновить значение элемента коллекции по ID");
+        super("update <ID> ", "","update the value of the collection element whose id is equal to the given one");
         this.collectionManager = collectionManager;
         this.databaseCollectionManager = databaseCollectionManager;
     }
@@ -36,56 +36,52 @@ public class UpdateCommand extends AbstractCommand {
 
             long id = Long.parseLong(stringArgument);
             if (id <= 0) throw new NumberFormatException();
-            SpaceMarine oldMarine = collectionManager.getById(id);
-            if (oldMarine == null) throw new MarineNotFoundException();
-            if (!oldMarine.getOwner().equals(user)) throw new PermissionDeniedException();
-            if (!databaseCollectionManager.checkMarineUserId(oldMarine.getId(), user)) throw new ManualDatabaseEditException();
-            MarineRaw marineRaw = (MarineRaw) objectArgument;
+            Organization oldOrganization = collectionManager.getById(id);
+            if (oldOrganization == null) throw new OrganizationNotFoundException();
+            if (!oldOrganization.getOwner().equals(user)) throw new PermissionDeniedException();
+            if (!databaseCollectionManager.checkOrganizationUserId(oldOrganization.getId(), user)) throw new ManualDatabaseEditException();
+            OrganizationRaw organizationRaw = (OrganizationRaw) objectArgument;
 
-            databaseCollectionManager.updateMarineById(id, marineRaw);
+            databaseCollectionManager.updateOrganizationById(id, organizationRaw);
 
-            String name = marineRaw.getName() == null ? oldMarine.getName() : marineRaw.getName();
-            Coordinates coordinates = marineRaw.getCoordinates() == null ? oldMarine.getCoordinates() : marineRaw.getCoordinates();
-            LocalDateTime creationDate = oldMarine.getCreationDate();
-            double health = marineRaw.getHealth() == -1 ? oldMarine.getHealth() : marineRaw.getHealth();
-            AstartesCategory category = marineRaw.getCategory() == null ? oldMarine.getCategory() : marineRaw.getCategory();
-            Weapon weaponType = marineRaw.getWeaponType() == null ? oldMarine.getWeaponType() : marineRaw.getWeaponType();
-            MeleeWeapon meleeWeapon = marineRaw.getMeleeWeapon() == null ? oldMarine.getMeleeWeapon() : marineRaw.getMeleeWeapon();
-            Chapter chapter = marineRaw.getChapter() == null ? oldMarine.getChapter() : marineRaw.getChapter();
+            String name = organizationRaw.getName() == null ? oldOrganization.getName() : organizationRaw.getName();
+            Coordinates coordinates = organizationRaw.getCoordinates() == null ? oldOrganization.getCoordinates() : organizationRaw.getCoordinates();
+            LocalDateTime creationDate = oldOrganization.getCreationDate();
+            long annualTurnover = organizationRaw.getAnnualTurnover() == -1 ? oldOrganization.getAnnualTurnover() : organizationRaw.getAnnualTurnover();
+            OrganizationType organizationType = organizationRaw.getOrganizationType() == null ? oldOrganization.getOrganizationType() : organizationRaw.getOrganizationType();
+            Address officialAddress = organizationRaw.getOfficialAddress() == null ? oldOrganization.getOfficialAddress() : organizationRaw.getOfficialAddress();
 
-            collectionManager.removeFromCollection(oldMarine);
-            collectionManager.addToCollection(new SpaceMarine(
+            collectionManager.removeFromCollection(oldOrganization);
+            collectionManager.addToCollection(new Organization(
                     id,
                     name,
                     coordinates,
                     creationDate,
-                    health,
-                    category,
-                    weaponType,
-                    meleeWeapon,
-                    chapter,
+                    annualTurnover,
+                    organizationType,
+                    officialAddress,
                     user
             ));
-            ResponseOutputer.appendln("Солдат успешно изменен!");
+            ResponseOutputer.appendln("Organization successfully changed!");
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         } catch (CollectionIsEmptyException exception) {
-            ResponseOutputer.appenderror("Коллекция пуста!");
+            ResponseOutputer.appenderror("The collection is empty!");
         } catch (NumberFormatException exception) {
-            ResponseOutputer.appenderror("ID должен быть представлен положительным числом!");
-        } catch (MarineNotFoundException exception) {
-            ResponseOutputer.appenderror("Солдата с таким ID в коллекции нет!");
+            ResponseOutputer.appenderror("ID must be represented as a positive number!");
+        } catch (OrganizationNotFoundException exception) {
+            ResponseOutputer.appenderror("There is no soldier with this ID in the collection!");
         } catch (ClassCastException exception) {
-            ResponseOutputer.appenderror("Переданный клиентом объект неверен!");
+            ResponseOutputer.appenderror("The object passed by the client is invalid!");
         } catch (DatabaseHandlingException exception) {
-            ResponseOutputer.appenderror("Произошла ошибка при обращении к базе данных!");
+            ResponseOutputer.appenderror("An error occurred while accessing the database!");
         } catch (PermissionDeniedException exception) {
-            ResponseOutputer.appenderror("Недостаточно прав для выполнения данной команды!");
-            ResponseOutputer.appendln("Принадлежащие другим пользователям объекты доступны только для чтения.");
+            ResponseOutputer.appenderror("Insufficient rights to execute this command!");
+            ResponseOutputer.appendln("Objects owned by other users are read-only.");
         } catch (ManualDatabaseEditException exception) {
-            ResponseOutputer.appenderror("Произошло прямое изменение базы данных!");
-            ResponseOutputer.appendln("Перезапустите клиент для избежания возможных ошибок.");
+            ResponseOutputer.appenderror("A direct database change has occurred!");
+            ResponseOutputer.appendln("Restart the client to avoid possible errors.");
         }
         return false;
     }

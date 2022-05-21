@@ -1,6 +1,5 @@
 package server.utility;
 
-import com.google.common.escape.ArrayBasedUnicodeEscaper;
 import common.interaction.Request;
 import common.interaction.Response;
 import common.interaction.ResponseCode;
@@ -59,8 +58,8 @@ public class ConnectionHandler implements Runnable {
      */
     @Override
     public void run() {
-        Request userRequest = null;
-        Response responseToUser = null;
+        Request userRequest;
+        Response responseToUser;
         boolean stopFlag = false;
         try (ObjectInputStream clientReader = new ObjectInputStream(clientSocket.getInputStream());
              ObjectOutputStream clientWriter = new ObjectOutputStream(clientSocket.getOutputStream())) {

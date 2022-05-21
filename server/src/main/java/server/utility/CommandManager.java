@@ -27,11 +27,11 @@ public class CommandManager {
     private final Command exitCommand;
     private final Command executeScriptCommand;
     private final Command addIfMinCommand;
-    private final Command removeGreaterCommand;
+    private final Command removeLowerCommand;
     private final Command historyCommand;
-    private final Command sumOfHealthCommand;
-    private final Command maxByMeleeWeaponCommand;
-    private final Command filterByWeaponTypeCommand;
+    private final Command averageOfAnnualTurnoverCommand;
+    private final Command countGreaterThanOfficialAddressCommand;
+    private final Command filterGreaterThanTypeCommand;
     private final Command serverExitCommand;
     private final Command loginCommand;
     private final Command registerCommand;
@@ -39,11 +39,25 @@ public class CommandManager {
     private final ReadWriteLock historyLocker = new ReentrantReadWriteLock();
     private final ReadWriteLock collectionLocker = new ReentrantReadWriteLock();
 
-    public CommandManager(Command helpCommand, Command infoCommand, Command showCommand, Command addCommand, Command updateCommand,
-                          Command removeByIdCommand, Command clearCommand, Command exitCommand, Command executeScriptCommand,
-                          Command addIfMinCommand, Command removeGreaterCommand, Command historyCommand, Command sumOfHealthCommand,
-                          Command maxByMeleeWeaponCommand, Command filterByWeaponTypeCommand, Command serverExitCommand,
-                          Command loginCommand, Command registerCommand) {
+    public CommandManager(Command helpCommand,
+                          Command infoCommand,
+                          Command showCommand,
+                          Command addCommand,
+                          Command updateCommand,
+                          Command removeByIdCommand,
+                          Command clearCommand,
+                          Command exitCommand,
+                          Command executeScriptCommand,
+                          Command addIfMinCommand,
+                          Command removeLowerCommand,
+                          Command historyCommand,
+                          Command averageOfAnnualTurnoverCommand,
+                          Command countGreaterThanOfficialAddressCommand,
+                          Command filterGreaterThanTypeCommand,
+                          Command serverExitCommand,
+                          Command loginCommand,
+                          Command registerCommand)
+    {
         this.helpCommand = helpCommand;
         this.infoCommand = infoCommand;
         this.showCommand = showCommand;
@@ -54,11 +68,11 @@ public class CommandManager {
         this.exitCommand = exitCommand;
         this.executeScriptCommand = executeScriptCommand;
         this.addIfMinCommand = addIfMinCommand;
-        this.removeGreaterCommand = removeGreaterCommand;
+        this.removeLowerCommand = removeLowerCommand;
         this.historyCommand = historyCommand;
-        this.sumOfHealthCommand = sumOfHealthCommand;
-        this.maxByMeleeWeaponCommand = maxByMeleeWeaponCommand;
-        this.filterByWeaponTypeCommand = filterByWeaponTypeCommand;
+        this.averageOfAnnualTurnoverCommand = averageOfAnnualTurnoverCommand;
+        this.countGreaterThanOfficialAddressCommand = countGreaterThanOfficialAddressCommand;
+        this.filterGreaterThanTypeCommand = filterGreaterThanTypeCommand;
         this.serverExitCommand = serverExitCommand;
         this.loginCommand = loginCommand;
         this.registerCommand = registerCommand;
@@ -73,11 +87,11 @@ public class CommandManager {
         commands.add(exitCommand);
         commands.add(executeScriptCommand);
         commands.add(addIfMinCommand);
-        commands.add(removeGreaterCommand);
+        commands.add(removeLowerCommand);
         commands.add(historyCommand);
-        commands.add(sumOfHealthCommand);
-        commands.add(maxByMeleeWeaponCommand);
-        commands.add(filterByWeaponTypeCommand);
+        commands.add(averageOfAnnualTurnoverCommand);
+        commands.add(countGreaterThanOfficialAddressCommand);
+        commands.add(filterGreaterThanTypeCommand);
         commands.add(serverExitCommand);
     }
 
@@ -274,7 +288,7 @@ public class CommandManager {
     public boolean removeGreater(String stringArgument, Object objectArgument, User user) {
         collectionLocker.writeLock().lock();
         try {
-            return removeGreaterCommand.execute(stringArgument, objectArgument, user);
+            return removeLowerCommand.execute(stringArgument, objectArgument, user);
         } finally {
             collectionLocker.writeLock().unlock();
         }
@@ -293,13 +307,13 @@ public class CommandManager {
             historyLocker.readLock().lock();
             try {
                 if (commandHistory.length == 0) throw new HistoryIsEmptyException();
-                ResponseOutputer.appendln("Последние использованные команды:");
+                ResponseOutputer.appendln("Last used commands:");
                 for (String command : commandHistory) {
                     if (command != null) ResponseOutputer.appendln(" " + command);
                 }
                 return true;
             } catch (HistoryIsEmptyException exception) {
-                ResponseOutputer.appendln("Ни одной команды еще не было использовано!");
+                ResponseOutputer.appendln("No commands have been used yet!");
             } finally {
                 historyLocker.readLock().unlock();
             }
@@ -315,10 +329,10 @@ public class CommandManager {
      * @param user           User object.
      * @return Command exit status.
      */
-    public boolean sumOfHealth(String stringArgument, Object objectArgument, User user) {
+    public boolean averageOfAnnualTurnover(String stringArgument, Object objectArgument, User user) {
         collectionLocker.readLock().lock();
         try {
-            return sumOfHealthCommand.execute(stringArgument, objectArgument, user);
+            return averageOfAnnualTurnoverCommand.execute(stringArgument, objectArgument, user);
         } finally {
             collectionLocker.readLock().unlock();
         }
@@ -332,10 +346,10 @@ public class CommandManager {
      * @param user           User object.
      * @return Command exit status.
      */
-    public boolean maxByMeleeWeapon(String stringArgument, Object objectArgument, User user) {
+    public boolean countGreaterThanOfficialAddress(String stringArgument, Object objectArgument, User user) {
         collectionLocker.readLock().lock();
         try {
-            return maxByMeleeWeaponCommand.execute(stringArgument, objectArgument, user);
+            return countGreaterThanOfficialAddressCommand.execute(stringArgument, objectArgument, user);
         } finally {
             collectionLocker.readLock().unlock();
         }
@@ -349,10 +363,10 @@ public class CommandManager {
      * @param user           User object.
      * @return Command exit status.
      */
-    public boolean filterByWeaponType(String stringArgument, Object objectArgument, User user) {
+    public boolean filterGreaterThanType(String stringArgument, Object objectArgument, User user) {
         collectionLocker.readLock().lock();
         try {
-            return filterByWeaponTypeCommand.execute(stringArgument, objectArgument, user);
+            return filterGreaterThanTypeCommand.execute(stringArgument, objectArgument, user);
         } finally {
             collectionLocker.readLock().lock();
         }

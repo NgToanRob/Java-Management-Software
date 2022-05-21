@@ -1,11 +1,10 @@
 package client.utility;
 
-import client.App;
 import common.data.*;
 import common.exceptions.CommandUsageException;
 import common.exceptions.IncorrectInputInScriptException;
 import common.exceptions.ScriptRecursionException;
-import common.interaction.MarineRaw;
+import common.interaction.OrganizationRaw;
 import common.interaction.Request;
 import common.interaction.ResponseCode;
 import common.interaction.User;
@@ -57,22 +56,22 @@ public class UserHandler {
                     if (fileMode()) {
                         userInput = userScanner.nextLine();
                         if (!userInput.isEmpty()) {
-                            Outputer.print(App.PS1);
+                            Outputer.print(Outputer.PS1);
                             Outputer.println(userInput);
                         }
                     } else {
-                        Outputer.print(App.PS1);
+                        Outputer.print(Outputer.PS1);
                         userInput = userScanner.nextLine();
                     }
                     userCommand = (userInput.trim() + " ").split(" ", 2);
                     userCommand[1] = userCommand[1].trim();
                 } catch (NoSuchElementException | IllegalStateException exception) {
                     Outputer.println();
-                    Outputer.printerror("Произошла ошибка при вводе команды!");
+                    Outputer.printerror("An error occurred while entering the command!");
                     userCommand = new String[]{"", ""};
                     rewriteAttempts++;
                     if (rewriteAttempts >= maxRewriteAttempts) {
-                        Outputer.printerror("Превышено количество попыток ввода!");
+                        Outputer.printerror("Number of input attempts exceeded!");
                         System.exit(0);
                     }
                 }
@@ -83,10 +82,10 @@ public class UserHandler {
                     throw new IncorrectInputInScriptException();
                 switch (processingCode) {
                     case OBJECT:
-                        MarineRaw marineAddRaw = generateMarineAdd();
+                        OrganizationRaw marineAddRaw = generateOrganizationAdd();
                         return new Request(userCommand[0], userCommand[1], marineAddRaw, user);
                     case UPDATE_OBJECT:
-                        MarineRaw marineUpdateRaw = generateMarineUpdate();
+                        OrganizationRaw marineUpdateRaw = generateOrganizationUpdate();
                         return new Request(userCommand[0], userCommand[1], marineUpdateRaw, user);
                     case SCRIPT:
                         File scriptFile = new File(userCommand[1]);
@@ -96,17 +95,17 @@ public class UserHandler {
                         scannerStack.push(userScanner);
                         scriptStack.push(scriptFile);
                         userScanner = new Scanner(scriptFile);
-                        Outputer.println("Выполняю скрипт '" + scriptFile.getName() + "'...");
+                        Outputer.println("Executing a script'" + scriptFile.getName() + "'...");
                         break;
                 }
             } catch (FileNotFoundException exception) {
-                Outputer.printerror("Файл со скриптом не найден!");
+                Outputer.printerror("Script file not found!");
             } catch (ScriptRecursionException exception) {
-                Outputer.printerror("Скрипты не могут вызываться рекурсивно!");
+                Outputer.printerror("Scripts cannot be called recursively!");
                 throw new IncorrectInputInScriptException();
             }
         } catch (IncorrectInputInScriptException exception) {
-            Outputer.printerror("Выполнение скрипта прервано!");
+            Outputer.printerror("Script execution aborted!");
             while (!scannerStack.isEmpty()) {
                 userScanner.close();
                 userScanner = scannerStack.pop();
@@ -117,10 +116,13 @@ public class UserHandler {
         return new Request(userCommand[0], userCommand[1], null, user);
     }
 
+
     /**
-     * Processes the entered command.
+     * It checks if the command is valid and if it is, it returns a code that tells the program what to do next
      *
-     * @return Status of code.
+     * @param command the command itself
+     * @param commandArgument the argument of the command, if any.
+     * @return ProcessingCode.OK
      */
     private ProcessingCode processCommand(String command, String commandArgument) {
         try {
@@ -157,53 +159,51 @@ public class UserHandler {
                 case "add_if_min":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException("{element}");
                     return ProcessingCode.OBJECT;
-                case "remove_greater":
+                case "remove_lower":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException("{element}");
                     return ProcessingCode.OBJECT;
                 case "history":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException();
                     break;
-                case "sum_of_health":
+                case "average_of_annual_turnover":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException();
                     break;
-                case "max_by_melee_weapon":
+                case "count_greater_than_official_address":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException();
                     break;
-                case "filter_by_weapon_type":
-                    if (commandArgument.isEmpty()) throw new CommandUsageException("<weapon_type>");
+                case "filter_greater_than_type":
+                    if (commandArgument.isEmpty()) throw new CommandUsageException("<type>");
                     break;
                 case "server_exit":
                     if (!commandArgument.isEmpty()) throw new CommandUsageException();
                     break;
                 default:
-                    Outputer.println("Команда '" + command + "' не найдена. Наберите 'help' для справки.");
+                    Outputer.println("Command '" + command + "' not found. Type 'help' for help.");
                     return ProcessingCode.ERROR;
             }
         } catch (CommandUsageException exception) {
             if (exception.getMessage() != null) command += " " + exception.getMessage();
-            Outputer.println("Использование: '" + command + "'");
+            Outputer.println("Using: '" + command + "'");
             return ProcessingCode.ERROR;
         }
         return ProcessingCode.OK;
     }
 
+
     /**
-     * Generates marine to add.
+     * It asks the user for the fields of the OrganizationRaw class, and returns an instance of this class
      *
-     * @return Marine to add.
-     * @throws IncorrectInputInScriptException When something went wrong in script.
+     * @return OrganizationRaw
      */
-    private MarineRaw generateMarineAdd() throws IncorrectInputInScriptException {
-        MarineAsker marineAsker = new MarineAsker(userScanner);
-        if (fileMode()) marineAsker.setFileMode();
-        return new MarineRaw(
-                marineAsker.askName(),
-                marineAsker.askCoordinates(),
-                marineAsker.askHealth(),
-                marineAsker.askCategory(),
-                marineAsker.askWeaponType(),
-                marineAsker.askMeleeWeapon(),
-                marineAsker.askChapter()
+    private OrganizationRaw generateOrganizationAdd() throws IncorrectInputInScriptException {
+        OrganizationAsker organizationAsker = new OrganizationAsker(userScanner);
+        if (fileMode()) organizationAsker.setFileMode();
+        return new OrganizationRaw(
+                organizationAsker.askName(),
+                organizationAsker.askCoordinates(),
+                organizationAsker.askAnnualTurnover(),
+                organizationAsker.askOrganizationType(),
+                organizationAsker.askOfficialAddress()
         );
     }
 
@@ -213,32 +213,27 @@ public class UserHandler {
      * @return Marine to update.
      * @throws IncorrectInputInScriptException When something went wrong in script.
      */
-    private MarineRaw generateMarineUpdate() throws IncorrectInputInScriptException {
-        MarineAsker marineAsker = new MarineAsker(userScanner);
-        if (fileMode()) marineAsker.setFileMode();
-        String name = marineAsker.askQuestion("Хотите изменить имя солдата?") ?
-                marineAsker.askName() : null;
-        Coordinates coordinates = marineAsker.askQuestion("Хотите изменить координаты солдата?") ?
-                marineAsker.askCoordinates() : null;
-        double health = marineAsker.askQuestion("Хотите изменить здоровье солдата?") ?
-                marineAsker.askHealth() : -1;
-        AstartesCategory category = marineAsker.askQuestion("Хотите изменить категорию солдата?") ?
-                marineAsker.askCategory() : null;
-        Weapon weaponType = marineAsker.askQuestion("Хотите изменить оружие дальнего боя солдата?") ?
-                marineAsker.askWeaponType() : null;
-        MeleeWeapon meleeWeapon = marineAsker.askQuestion("Хотите изменить оружие ближнего боя солдата?") ?
-                marineAsker.askMeleeWeapon() : null;
-        Chapter chapter = marineAsker.askQuestion("Хотите изменить орден солдата?") ?
-                marineAsker.askChapter() : null;
-        return new MarineRaw(
+    private OrganizationRaw generateOrganizationUpdate() throws IncorrectInputInScriptException {
+        OrganizationAsker asker = new OrganizationAsker(userScanner);
+        if (fileMode()) asker.setFileMode();
+        String name = asker.askQuestion("Do you want to change the organization's name?") ?
+                asker.askName() : null;
+        Coordinates coordinates = asker.askQuestion("Do you want to change the organization's coordinates") ?
+                asker.askCoordinates() : null;
+        long annualTurnover = asker.askQuestion("Do you want to change the organization's annual turnover") ?
+                asker.askAnnualTurnover() : -1; // annualTurnover always >= 0, so -1 is a bad value
+        OrganizationType type = asker.askQuestion("Do you want to change the organization's type?") ?
+                asker.askOrganizationType() : null;
+        Address address =  asker.askQuestion("Do you want to change the organization's official address?") ?
+                asker.askOfficialAddress() : null;
+        return new OrganizationRaw(
                 name,
                 coordinates,
-                health,
-                category,
-                weaponType,
-                meleeWeapon,
-                chapter
+                annualTurnover,
+                type,
+                address
         );
+        // Need to handle filed not allow null value
     }
 
     /**

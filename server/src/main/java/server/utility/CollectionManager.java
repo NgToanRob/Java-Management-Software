@@ -1,24 +1,23 @@
 package server.utility;
 
-import common.data.MeleeWeapon;
-import common.data.SpaceMarine;
-import common.data.Weapon;
+import common.data.Address;
+import common.data.Organization;
+import common.data.OrganizationType;
 import common.exceptions.CollectionIsEmptyException;
 import common.exceptions.DatabaseHandlingException;
 import common.utility.Outputer;
 import server.App;
 
 import java.time.LocalDateTime;
-import java.util.NavigableSet;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 /**
  * Operates the collection itself.
  */
 public class CollectionManager {
-    private NavigableSet<SpaceMarine> marinesCollection;
+    private ArrayList<Organization> organizationCollection;
     private LocalDateTime lastInitTime;
-    private DatabaseCollectionManager databaseCollectionManager;
+    private final DatabaseCollectionManager databaseCollectionManager;
 
     public CollectionManager(DatabaseCollectionManager databaseCollectionManager) {
         this.databaseCollectionManager = databaseCollectionManager;
@@ -27,10 +26,28 @@ public class CollectionManager {
     }
 
     /**
-     * @return Marines collection.
+     * Loads the collection from file.
      */
-    public NavigableSet<SpaceMarine> getCollection() {
-        return marinesCollection;
+    private void loadCollection() {
+        try {
+            organizationCollection = databaseCollectionManager.getCollection();
+            lastInitTime = LocalDateTime.now();
+            Outputer.println("The collection is loaded.");
+            App.logger.info("The collection is loaded.");
+        } catch (DatabaseHandlingException exception) {
+            organizationCollection = new ArrayList<>();
+            Outputer.printerror("The collection could not be loaded!");
+            App.logger.error("The collection could not be loaded!");
+        }
+    }
+
+    /**
+     * Get the collection of organizations
+     *
+     * @return An ArrayList of Organization objects.
+     */
+    public ArrayList<Organization> getCollection() {
+        return organizationCollection;
     }
 
     /**
@@ -44,129 +61,139 @@ public class CollectionManager {
      * @return Name of the collection's type.
      */
     public String collectionType() {
-        return marinesCollection.getClass().getName();
+        return organizationCollection.getClass().getName();
     }
 
     /**
      * @return Size of the collection.
      */
     public int collectionSize() {
-        return marinesCollection.size();
+        return organizationCollection.size();
     }
 
     /**
      * @return The first element of the collection or null if collection is empty.
      */
-    public SpaceMarine getFirst() {
-        return marinesCollection.stream().findFirst().orElse(null);
+    public Organization getFirst() {
+        return organizationCollection.stream().findFirst().orElse(null);
     }
 
     /**
-     * @param id ID of the marine.
-     * @return A marine by his ID or null if marine isn't found.
+     * @param id ID of the organization.
+     * @return An organization by his ID or null if organization isn't found.
      */
-    public SpaceMarine getById(Long id) {
-        return marinesCollection.stream().filter(marine -> marine.getId().equals(id)).findFirst().orElse(null);
+    public Organization getById(Long id) {
+        return organizationCollection.stream()
+                .filter(organization ->
+                        ((Long)organization.getId()).equals(id)).findFirst().orElse(null);
     }
 
     /**
-     * @param marineToFind A marine who's value will be found.
-     * @return A marine by his value or null if marine isn't found.
+     * @param organizationToFind An organization whose value will be found.
+     * @return An organization by his value or null if organization isn't found.
      */
-    public SpaceMarine getByValue(SpaceMarine marineToFind) {
-        return marinesCollection.stream().filter(marine -> marine.equals(marineToFind)).findFirst().orElse(null);
+    public Organization getByValue(Organization organizationToFind) {
+        return organizationCollection.stream()
+                .filter(organization -> organization.equals(organizationToFind)).findFirst().orElse(null);
     }
 
     /**
-     * @return Sum of all marines' health or 0 if collection is empty.
+     * @return Sum of all organizations' health or 0 if collection is empty.
      */
-    public double getSumOfHealth() {
-        return marinesCollection.stream()
-                .reduce(0.0, (sum, p) -> sum += p.getHealth(), Double::sum);
+    public double getAverageOfAnnualTurnover() throws CollectionIsEmptyException {
+        int totalOrganizations = collectionSize();
+        if (totalOrganizations == 0) throw new CollectionIsEmptyException();
+        return organizationCollection.stream().mapToDouble(Organization::getAnnualTurnover).average()
+                .getAsDouble();
     }
 
     /**
      * @return Collection content or corresponding string if collection is empty.
      */
     public String showCollection() {
-        if (marinesCollection.isEmpty()) return "Коллекция пуста!";
-        return marinesCollection.stream().reduce("", (sum, m) -> sum += m + "\n\n", (sum1, sum2) -> sum1 + sum2).trim();
+        if (organizationCollection.isEmpty()) return "The collection is empty!";
+        return organizationCollection.stream().reduce("", (sum, m) -> sum += m + "\n\n", (sum1, sum2) -> sum1 + sum2).trim();
     }
 
     /**
      * @return Marine, who has max melee weapon.
      * @throws CollectionIsEmptyException If collection is empty.
      */
-    public String maxByMeleeWeapon() throws CollectionIsEmptyException {
-        if (marinesCollection.isEmpty()) throw new CollectionIsEmptyException();
-
-        MeleeWeapon maxMeleeWeapon = marinesCollection.stream().map(marine -> marine.getMeleeWeapon())
-                .max(Enum::compareTo).get();
-        return marinesCollection.stream()
-                .filter(marine -> marine.getMeleeWeapon().equals(maxMeleeWeapon)).findFirst().get().toString();
-    }
+//    public String maxByMeleeWeapon() throws CollectionIsEmptyException {
+//        if (organizationCollection.isEmpty()) throw new CollectionIsEmptyException();
+//
+//        MeleeWeapon maxMeleeWeapon = organizationCollection.stream().map(Organization::getMeleeWeapon)
+//                .max(Enum::compareTo).get();
+//        return organizationCollection.stream()
+//                .filter(organization -> organization.getMeleeWeapon().equals(maxMeleeWeapon)).findFirst().get().toString();
+//    }
 
     /**
-     * @param weaponToFilter Weapon to filter by.
-     * @return Information about valid marines or empty string, if there's no such marines.
+     * @param organizationToFilter Organization to filter by.
+     * @return Information about valid organizations or empty string, if there's no such organizations.
      */
-    public String weaponFilteredInfo(Weapon weaponToFilter) {
-        return marinesCollection.stream().filter(marine -> marine.getWeaponType().equals(weaponToFilter))
-                .reduce("", (sum, m) -> sum += m + "\n\n", (sum1, sum2) -> sum1 + sum2).trim();
+    public String organizationTypeFilteredInfo(OrganizationType organizationToFilter) {
+        return organizationCollection.stream()
+                .filter(organization -> organization.getOrganizationType().compareTo(organizationToFilter) > 0)
+                .reduce(
+                        "",
+                        (sum, m) -> sum += m + "\n\n",
+                        (sum1, sum2) -> sum1 + sum2)
+                .trim();
     }
 
     /**
-     * Remove marines greater than the selected one.
+     * Remove organizations greater than the selected one.
      *
-     * @param marineToCompare A marine to compare with.
-     * @return Greater marines list.
+     * @param organizationToCompare A organization to compare with.
+     * @return Greater organizations list.
      */
-    public NavigableSet<SpaceMarine> getGreater(SpaceMarine marineToCompare) {
-        return marinesCollection.stream().filter(marine -> marine.compareTo(marineToCompare) > 0).collect(
-                TreeSet::new,
-                TreeSet::add,
-                TreeSet::addAll
-        );
+    public ArrayList<Organization> getLower(Organization organizationToCompare) {
+        return organizationCollection.stream()
+                .filter(organization -> organization.compareTo(organizationToCompare) < 0)
+                .collect(
+                ArrayList::new,
+                ArrayList::add,
+                ArrayList::addAll
+                );
     }
 
     /**
-     * Adds a new marine to collection.
+     * Adds a new organization to collection.
      *
-     * @param marine A marine to add.
+     * @param organization An organization to add.
      */
-    public void addToCollection(SpaceMarine marine) {
-        marinesCollection.add(marine);
+    public void addToCollection(Organization organization) {
+        organizationCollection.add(organization);
     }
 
     /**
-     * Removes a new marine to collection.
+     * Removes a new organization to collection.
      *
-     * @param marine A marine to remove.
+     * @param organization An organization to remove.
      */
-    public void removeFromCollection(SpaceMarine marine) {
-        marinesCollection.remove(marine);
+    public void removeFromCollection(Organization organization) {
+        organizationCollection.remove(organization);
     }
 
     /**
      * Clears the collection.
      */
     public void clearCollection() {
-        marinesCollection.clear();
+        organizationCollection.clear();
     }
 
-    /**
-     * Loads the collection from file.
-     */
-    private void loadCollection() {
-        try {
-            marinesCollection = databaseCollectionManager.getCollection();
-            lastInitTime = LocalDateTime.now();
-            Outputer.println("Коллекция загружена.");
-            App.logger.info("Коллекция загружена.");
-        } catch (DatabaseHandlingException exception) {
-            marinesCollection = new TreeSet<>();
-            Outputer.printerror("Коллекция не может быть загружена!");
-            App.logger.error("Коллекция не может быть загружена!");
+    public int getCountGreaterThanOfficialAddress(Address address) throws CollectionIsEmptyException {
+        if (organizationCollection.isEmpty())
+            throw new CollectionIsEmptyException();
+        int count = 0;
+        for (Organization organization : organizationCollection) {
+            if (organization.getOfficialAddress().getStreet() == null)
+                continue;
+            if (organization.getOfficialAddress().compareTo(address) > 0) {
+                count += 1;
+            }
         }
+        return count;
     }
 }

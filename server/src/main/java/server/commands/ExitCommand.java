@@ -10,7 +10,7 @@ import server.utility.ResponseOutputer;
 public class ExitCommand extends AbstractCommand {
 
     public ExitCommand() {
-        super("exit", "", "завершить работу клиента");
+        super("exit","" ,"terminate program (without saving to file)");
     }
 
     /**
@@ -24,7 +24,7 @@ public class ExitCommand extends AbstractCommand {
             if (!stringArgument.isEmpty() || objectArgument != null) throw new WrongAmountOfElementsException();
             return true;
         } catch (WrongAmountOfElementsException exception) {
-            ResponseOutputer.appendln("Использование: '" + getName() + " " + getUsage() + "'");
+            ResponseOutputer.appendln("Using: '" + getName() + " " + getUsage() + "'");
         }
         return false;
     }
