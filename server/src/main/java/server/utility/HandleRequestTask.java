@@ -22,6 +22,7 @@ public class HandleRequestTask implements Runnable {
         this.commandManager = commandManager;
     }
 
+// ** Uncoment below lines to implement compute when using RecursiveTask
 //
 //    @Override
 //    protected Response compute() {
