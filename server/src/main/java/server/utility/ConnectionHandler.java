@@ -12,6 +12,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Handles user connection.
@@ -20,8 +22,8 @@ public class ConnectionHandler implements Runnable {
     private final Server server;
     private final Socket clientSocket;
     private final CommandManager commandManager;
-    private final ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
-    private final ExecutorService fixedThreadPool =   Executors.newFixedThreadPool(1);
+//    private final ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
+    private final ExecutorService cachedThreadPool =   Executors.newCachedThreadPool();
 
 
     public ConnectionHandler(Server server, Socket clientSocket, CommandManager commandManager) {
@@ -29,29 +31,6 @@ public class ConnectionHandler implements Runnable {
         this.clientSocket = clientSocket;
         this.commandManager = commandManager;
     }
-
-//    @Override
-//    public void run(){
-//        Request userRequest = receiveRequest(clientSocket);
-//        Response serverResponse = handle(userRequest);
-//        flushResponse(serverResponse);
-//    }
-//
-//    private Request receiveRequest(Socket clientSocket) {
-//        try (ObjectInputStream clientReader = new ObjectInputStream(clientSocket.getInputStream())){
-//            return (Request) clientReader.readObject();
-//
-//        } catch (IOException e) {
-//            Outputer.printerror("Unexpected termination of connection with the client!");
-//            App.logger.warn("Unexpected termination of connection with the client!");
-//        } catch (ClassNotFoundException e) {
-//            Outputer.printerror("An error occurred while reading the received data!");
-//            App.logger.error("An error occurred while reading the received data!");
-//        }
-//
-//
-//    }
-
 
     /**
      * Main handling cycle. The server receives a request from the client, processes it, and sends a response to the client
@@ -65,11 +44,19 @@ public class ConnectionHandler implements Runnable {
              ObjectOutputStream clientWriter = new ObjectOutputStream(clientSocket.getOutputStream())) {
             do {
                 userRequest = (Request) clientReader.readObject();
-                responseToUser = forkJoinPool.invoke(new HandleRequestTask(userRequest, commandManager));
+
+                // Phaỉ đợi processRequest xong rồi mới lấy đc response
+                HandleRequestTask handleRequestTask = new HandleRequestTask(userRequest, commandManager);
+                Thread processRequest = new Thread(handleRequestTask);
+                processRequest.start();
+                System.out.println("Hehehehe");
+//                wait();
+                processRequest.join();
+                responseToUser = handleRequestTask.getResponse();
+//                responseToUser = forkJoinPool.invoke(new HandleRequestTask(userRequest, commandManager));
                 App.logger.info("Request '" + userRequest.getCommandName() + "' processed.");
                 Response finalResponseToUser = responseToUser;
-
-                if (!fixedThreadPool.submit(() -> {
+                if (!cachedThreadPool.submit(() -> {
                     try {
                         clientWriter.writeObject(finalResponseToUser);
                         clientWriter.flush();
@@ -80,8 +67,8 @@ public class ConnectionHandler implements Runnable {
                     }
                     return false;
                 }).get()) break;
-            } while (responseToUser.getResponseCode() != ResponseCode.SERVER_EXIT &&
-                    responseToUser.getResponseCode() != ResponseCode.CLIENT_EXIT);
+            } while (responseToUser.getResponseCode() != ResponseCode.SERVER_EXIT
+                    && responseToUser.getResponseCode() != ResponseCode.CLIENT_EXIT);
             if (responseToUser.getResponseCode() == ResponseCode.SERVER_EXIT)
                 stopFlag = true;
         } catch (ClassNotFoundException exception) {
@@ -95,7 +82,7 @@ public class ConnectionHandler implements Runnable {
             App.logger.warn("Unexpected termination of connection with the client!");
         } finally {
             try {
-                fixedThreadPool.shutdown();
+                cachedThreadPool.shutdown();
                 clientSocket.close();
                 Outputer.println("The client is disconnected from the server.");
                 App.logger.info("The client is disconnected from the server.");
@@ -107,4 +94,5 @@ public class ConnectionHandler implements Runnable {
             server.releaseConnection();
         }
     }
+    
 }

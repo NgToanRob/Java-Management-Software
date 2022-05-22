@@ -10,17 +10,33 @@ import java.util.concurrent.RecursiveTask;
 /**
  * A class for handle request task.
  */
-public class HandleRequestTask extends RecursiveTask<Response> {
+//public class HandleRequestTask extends RecursiveTask<Response> {
+public class HandleRequestTask implements Runnable {
+
     private final Request request;
     private final CommandManager commandManager;
+    private Response response;
 
     public HandleRequestTask(Request request, CommandManager commandManager) {
         this.request = request;
         this.commandManager = commandManager;
     }
 
+//
+//    @Override
+//    protected Response compute() {
+//        User hashedUser = new User(
+//                request.getUser().getUsername(),
+//                PasswordHasher.hashPassword(request.getUser().getPassword())
+//        );
+//        commandManager.addToHistory(request.getCommandName(), request.getUser());
+//        ResponseCode responseCode = executeCommand(request.getCommandName(), request.getCommandStringArgument(),
+//                request.getCommandObjectArgument(), hashedUser);
+//        return new Response(responseCode, ResponseOutputer.getAndClear());
+//    }
+
     @Override
-    protected Response compute() {
+    synchronized public void run() {
         User hashedUser = new User(
                 request.getUser().getUsername(),
                 PasswordHasher.hashPassword(request.getUser().getPassword())
@@ -28,7 +44,11 @@ public class HandleRequestTask extends RecursiveTask<Response> {
         commandManager.addToHistory(request.getCommandName(), request.getUser());
         ResponseCode responseCode = executeCommand(request.getCommandName(), request.getCommandStringArgument(),
                 request.getCommandObjectArgument(), hashedUser);
-        return new Response(responseCode, ResponseOutputer.getAndClear());
+        this.response =  new Response(responseCode, ResponseOutputer.getAndClear());
+    }
+
+    synchronized public Response getResponse() {
+        return response;
     }
 
     /**
@@ -84,7 +104,7 @@ public class HandleRequestTask extends RecursiveTask<Response> {
                 if (!commandManager.addIfMin(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;
-            case "remove_greater":
+            case "remove_lower":
                 if (!commandManager.removeGreater(commandStringArgument, commandObjectArgument, user))
                     return ResponseCode.ERROR;
                 break;

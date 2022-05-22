@@ -82,11 +82,14 @@ public class UserHandler {
                     throw new IncorrectInputInScriptException();
                 switch (processingCode) {
                     case OBJECT:
-                        OrganizationRaw marineAddRaw = generateOrganizationAdd();
-                        return new Request(userCommand[0], userCommand[1], marineAddRaw, user);
+                        OrganizationRaw organizationAddRaw = generateOrganizationAdd();
+                        return new Request(userCommand[0], userCommand[1], organizationAddRaw, user);
                     case UPDATE_OBJECT:
-                        OrganizationRaw marineUpdateRaw = generateOrganizationUpdate();
-                        return new Request(userCommand[0], userCommand[1], marineUpdateRaw, user);
+                        OrganizationRaw organizationUpdateRaw = generateOrganizationUpdate();
+                        return new Request(userCommand[0], userCommand[1], organizationUpdateRaw, user);
+                    case ADDRESS:
+                        Address addressToCompare = generateAddressToCompare();
+                        return new Request(userCommand[0], userCommand[1], addressToCompare, user);
                     case SCRIPT:
                         File scriptFile = new File(userCommand[1]);
                         if (!scriptFile.exists()) throw new FileNotFoundException();
@@ -169,8 +172,8 @@ public class UserHandler {
                     if (!commandArgument.isEmpty()) throw new CommandUsageException();
                     break;
                 case "count_greater_than_official_address":
-                    if (!commandArgument.isEmpty()) throw new CommandUsageException();
-                    break;
+                    if (!commandArgument.isEmpty()) throw new CommandUsageException("{address}");
+                    return ProcessingCode.ADDRESS;
                 case "filter_greater_than_type":
                     if (commandArgument.isEmpty()) throw new CommandUsageException("<type>");
                     break;
@@ -205,6 +208,13 @@ public class UserHandler {
                 organizationAsker.askOrganizationType(),
                 organizationAsker.askOfficialAddress()
         );
+    }
+
+    private Address generateAddressToCompare() throws IncorrectInputInScriptException {
+        OrganizationAsker asker = new OrganizationAsker(userScanner);
+        if (fileMode()) asker.setFileMode();
+        return  asker.askOfficialAddress();
+
     }
 
     /**

@@ -10,10 +10,10 @@ import server.utility.ConnectionHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+// import java.util.concurrent.ExecutorService;
+// import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+// import java.util.concurrent.TimeUnit;
 
 /**
  * Runs the server.
@@ -23,7 +23,7 @@ public class Server {
     private ServerSocket serverSocket;
     private final CommandManager commandManager;
     private boolean isStopped;
-    private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+//    private final ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
     private final Semaphore semaphore;
 
     public Server(int port, int maxClients, CommandManager commandManager) {
@@ -55,13 +55,13 @@ public class Server {
                     } else break;
                 }
             }
-            cachedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+//            cachedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             Outputer.println("The server has ended.");
         } catch (OpeningServerSocketException exception) {
             Outputer.printerror("The server cannot be started!");
             App.logger.error("The server cannot be started!");
-        } catch (InterruptedException e) {
-            Outputer.printerror("An error occurred while shutting down already connected clients!");
+//        } catch (InterruptedException e) {
+//            Outputer.printerror("An error occurred while shutting down already connected clients!");
         }
     }
 
@@ -94,7 +94,7 @@ public class Server {
             App.logger.info("Shutting down the server...");
             if (serverSocket == null) throw new ClosingSocketException();
             isStopped = true;
-            cachedThreadPool.shutdown();
+//            cachedThreadPool.shutdown();
             serverSocket.close();
             Outputer.println("Completing work with already connected clients...");
             App.logger.info("The server has ended.");

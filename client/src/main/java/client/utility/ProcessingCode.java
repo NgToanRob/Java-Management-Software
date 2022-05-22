@@ -8,5 +8,6 @@ public enum ProcessingCode {
     ERROR,
     OBJECT,
     UPDATE_OBJECT,
-    SCRIPT
+    ADDRESS,
+    SCRIPT    
 }
