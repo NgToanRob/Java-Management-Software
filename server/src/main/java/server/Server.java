@@ -46,6 +46,7 @@ public class Server {
                     ConnectionHandler task = new ConnectionHandler(this, clientSocket, commandManager);
 //                    cachedThreadPool.submit(task);
                     Thread readingRequest = new Thread(task);
+                    App.logger.info("Received a new request.");
                     readingRequest.start();
 
                 } catch (ConnectionErrorException exception) {

@@ -49,8 +49,6 @@ public class ConnectionHandler implements Runnable {
                 HandleRequestTask handleRequestTask = new HandleRequestTask(userRequest, commandManager);
                 Thread processRequest = new Thread(handleRequestTask);
                 processRequest.start();
-                System.out.println("Hehehehe");
-//                wait();
                 processRequest.join();
                 responseToUser = handleRequestTask.getResponse();
 //                responseToUser = forkJoinPool.invoke(new HandleRequestTask(userRequest, commandManager));
