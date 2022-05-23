@@ -1,9 +1,12 @@
-package server.utility;
+package server.utility.client;
 
 import common.interaction.Request;
 import common.interaction.Response;
 import common.interaction.ResponseCode;
 import common.interaction.User;
+import server.utility.CommandManager;
+import server.utility.PasswordHasher;
+import server.utility.ResponseOutputer;
 
 import java.util.concurrent.RecursiveTask;
 
@@ -11,11 +14,10 @@ import java.util.concurrent.RecursiveTask;
  * A class for handle request task.
  */
 //public class HandleRequestTask extends RecursiveTask<Response> {
-public class HandleRequestTask implements Runnable {
+public class HandleRequestTask extends RecursiveTask<Response> {
 
     private final Request request;
     private final CommandManager commandManager;
-    private Response response;
 
     public HandleRequestTask(Request request, CommandManager commandManager) {
         this.request = request;
@@ -37,7 +39,7 @@ public class HandleRequestTask implements Runnable {
 //    }
 
     @Override
-    synchronized public void run() {
+    public Response compute() {
         User hashedUser = new User(
                 request.getUser().getUsername(),
                 PasswordHasher.hashPassword(request.getUser().getPassword())
@@ -45,11 +47,7 @@ public class HandleRequestTask implements Runnable {
         commandManager.addToHistory(request.getCommandName(), request.getUser());
         ResponseCode responseCode = executeCommand(request.getCommandName(), request.getCommandStringArgument(),
                 request.getCommandObjectArgument(), hashedUser);
-        this.response =  new Response(responseCode, ResponseOutputer.getAndClear());
-    }
-
-    synchronized public Response getResponse() {
-        return response;
+        return new Response(responseCode, ResponseOutputer.getAndClear());
     }
 
     /**

@@ -7,6 +7,7 @@ import common.exceptions.CollectionIsEmptyException;
 import common.exceptions.DatabaseHandlingException;
 import common.utility.Outputer;
 import server.App;
+import server.utility.database.DatabaseCollectionManager;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

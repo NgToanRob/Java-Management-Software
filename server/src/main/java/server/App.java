@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import server.commands.*;
 import server.utility.*;
+import server.utility.database.DatabaseCollectionManager;
+import server.utility.database.DatabaseCommunication;
+import server.utility.database.DatabaseUserManager;
 
 /**
  * Main server class. Creates all server instances.

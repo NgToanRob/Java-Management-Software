@@ -4,7 +4,7 @@ import common.data.Organization;
 import common.exceptions.*;
 import common.interaction.User;
 import server.utility.CollectionManager;
-import server.utility.DatabaseCollectionManager;
+import server.utility.database.DatabaseCollectionManager;
 import server.utility.ResponseOutputer;
 
 /**

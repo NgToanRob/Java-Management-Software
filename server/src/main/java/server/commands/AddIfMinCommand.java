@@ -6,7 +6,7 @@ import common.exceptions.WrongAmountOfElementsException;
 import common.interaction.OrganizationRaw;
 import common.interaction.User;
 import server.utility.CollectionManager;
-import server.utility.DatabaseCollectionManager;
+import server.utility.database.DatabaseCollectionManager;
 import server.utility.ResponseOutputer;
 
 /**

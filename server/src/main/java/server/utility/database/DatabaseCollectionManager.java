@@ -1,4 +1,4 @@
-package server.utility;
+package server.utility.database;
 
 import common.data.*;
 import common.exceptions.DatabaseHandlingException;

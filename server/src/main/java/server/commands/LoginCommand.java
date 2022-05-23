@@ -4,7 +4,7 @@ import common.exceptions.DatabaseHandlingException;
 import common.exceptions.UserIsNotFoundException;
 import common.exceptions.WrongAmountOfElementsException;
 import common.interaction.User;
-import server.utility.DatabaseUserManager;
+import server.utility.database.DatabaseUserManager;
 import server.utility.ResponseOutputer;
 
 /**

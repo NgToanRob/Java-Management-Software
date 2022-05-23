@@ -1,8 +1,9 @@
-package server.utility;
+package server.utility.database;
 
 import common.exceptions.DatabaseHandlingException;
 import common.interaction.User;
 import server.App;
+import server.utility.database.DatabaseCommunication;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

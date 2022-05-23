@@ -5,7 +5,7 @@ import common.exceptions.ConnectionErrorException;
 import common.exceptions.OpeningServerSocketException;
 import common.utility.Outputer;
 import server.utility.CommandManager;
-import server.utility.ConnectionHandler;
+import server.utility.client.ConnectionHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -48,6 +48,7 @@ public class Server {
                     Thread readingRequest = new Thread(task);
                     App.logger.info("Received a new request.");
                     readingRequest.start();
+
 
                 } catch (ConnectionErrorException exception) {
                     if (!isStopped()) {
