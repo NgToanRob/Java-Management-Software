@@ -24,20 +24,6 @@ public class HandleRequestTask extends RecursiveTask<Response> {
         this.commandManager = commandManager;
     }
 
-// ** Uncoment below lines to implement compute when using RecursiveTask
-//
-//    @Override
-//    protected Response compute() {
-//        User hashedUser = new User(
-//                request.getUser().getUsername(),
-//                PasswordHasher.hashPassword(request.getUser().getPassword())
-//        );
-//        commandManager.addToHistory(request.getCommandName(), request.getUser());
-//        ResponseCode responseCode = executeCommand(request.getCommandName(), request.getCommandStringArgument(),
-//                request.getCommandObjectArgument(), hashedUser);
-//        return new Response(responseCode, ResponseOutputer.getAndClear());
-//    }
-
     @Override
     public Response compute() {
         User hashedUser = new User(
